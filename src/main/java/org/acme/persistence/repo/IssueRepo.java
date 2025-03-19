@@ -7,14 +7,19 @@ import com.arcadedb.remote.RemoteDatabase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.acme.persistence.entity.Issue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @ApplicationScoped
 public class IssueRepo
 {
+    private static final Logger LOG = LoggerFactory.getLogger(IssueRepo.class);
+
     private final static String LATEST_STATE = "latest_issue_state";
 
     @Inject
@@ -46,6 +51,19 @@ public class IssueRepo
             }
         }
         return Optional.empty();
+    }
+
+    public List<Issue> findByWhere(String where)
+    {
+        String sql = String.format("SELECT FROM (TRAVERSE out() FROM (TRAVERSE out() FROM project_id) MAXDEPTH 5) WHERE @type = 'issue' AND (%s)", where);
+        try(RemoteDatabase remoteDB = database.get())
+        {
+            LOG.info("Executing SQL {}", sql);
+            ResultSet rs = remoteDB.command("sql", sql);
+            List<Issue> issues = rs.stream().map(result -> new Issue().setKey(result.getProperty("key")).setProjectKey(result.getProperty("project_key")).setSummary(result.getProperty("summary")).setDescription(result.getProperty("description"))).toList();
+            LOG.info("Found {} result(s).", issues.size());
+            return issues;
+        }
     }
 
     private Optional<Issue> resultSetToOptionalIssue(ResultSet resultSet)
