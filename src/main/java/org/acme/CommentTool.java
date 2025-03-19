@@ -1,2 +1,8 @@
-package org.acme;public class CommentTool {
+package org.acme;
+
+import jakarta.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
+public class CommentTool
+{
 }

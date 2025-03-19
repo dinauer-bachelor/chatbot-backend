@@ -1,9 +1,9 @@
-package loader.persistance;
+package org.acme.persistence.entity;
 
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
-public class Project extends Entity
+public class Project
 {
     private String key;
     private String name;
@@ -55,9 +55,5 @@ public class Project extends Entity
         if (object == null || getClass() != object.getClass()) return false;
         Project that = (Project) object;
         return Objects.equals(key, that.key) && Objects.equals(name, that.name) && Objects.equals(getDescription(), that.getDescription());
-    }
-
-    public static Project fromProject(com.atlassian.jira.rest.client.api.domain.Project project) {
-        return new Project().setKey(project.getKey()).setName(project.getName()).setDescription(project.getDescription());
     }
 }

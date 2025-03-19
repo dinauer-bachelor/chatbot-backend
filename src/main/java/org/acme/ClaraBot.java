@@ -4,7 +4,7 @@ import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import io.quarkiverse.langchain4j.RegisterAiService;
 
-@RegisterAiService(tools = IssueTool.class)
+@RegisterAiService(tools = {IssueTool.class, ProjectTool.class, CommentTool.class})
 public interface ClaraBot
 {
     @SystemMessage("""
