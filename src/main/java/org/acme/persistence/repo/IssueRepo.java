@@ -10,10 +10,9 @@ import org.acme.persistence.entity.Issue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @ApplicationScoped
 public class IssueRepo
@@ -21,6 +20,8 @@ public class IssueRepo
     private static final Logger LOG = LoggerFactory.getLogger(IssueRepo.class);
 
     private final static String LATEST_STATE = "latest_issue_state";
+
+    private final static String HAS_STATE = "has_issue_state";
 
     @Inject
     Database database;
@@ -53,6 +54,32 @@ public class IssueRepo
         return Optional.empty();
     }
 
+    public Optional<Map<ZonedDateTime, Issue>> findHistoryById(String key)
+    {
+        Optional<Vertex> x = exists(key);
+        if(x.isPresent()) {
+            String sql = String.format("SELECT expand(@in) FROM %s WHERE @out = :out;", HAS_STATE);
+            try(RemoteDatabase remoteDB = database.get())
+            {
+                ResultSet rs = remoteDB.command("sql", sql, Map.ofEntries(new AbstractMap.SimpleEntry<>("out", x.get().getIdentity())));
+                Map<ZonedDateTime, Issue> history = new HashMap<>();
+                while(rs.hasNext())
+                {
+                    Result result = rs.next();
+                    Issue issue =  new Issue();
+                    issue.setKey(result.getProperty("key"));
+                    issue.setProjectKey(result.getProperty("project_key"));
+                    issue.setSummary(result.getProperty("summary"));
+                    issue.setStatus(result.getProperty("status"));
+                    issue.setDescription(result.getProperty("description"));
+                    history.put(ZonedDateTime.parse(result.getProperty("inserted_at"), DateTimeFormatter.ISO_DATE_TIME), issue);
+                }
+                return Optional.of(history);
+            }
+        }
+        return Optional.empty();
+    }
+
     public List<Issue> findByWhere(String where)
     {
         String sql = String.format("SELECT FROM (TRAVERSE out() FROM (TRAVERSE out() FROM project_id) MAXDEPTH 5) WHERE @type = 'issue' AND (%s)", where);
@@ -60,7 +87,7 @@ public class IssueRepo
         {
             LOG.info("Executing SQL {}", sql);
             ResultSet rs = remoteDB.command("sql", sql);
-            List<Issue> issues = rs.stream().map(result -> new Issue().setKey(result.getProperty("key")).setProjectKey(result.getProperty("project_key")).setSummary(result.getProperty("summary")).setDescription(result.getProperty("description"))).toList();
+            List<Issue> issues = rs.stream().map(this::resultToIssue).toList();
             LOG.info("Found {} result(s).", issues.size());
             return issues;
         }
@@ -73,14 +100,20 @@ public class IssueRepo
             Result result = resultSet.next();
             if(result.getIdentity().isPresent())
             {
-                Issue issue =  new Issue();
-                issue.setKey(result.getProperty("key"));
-                issue.setProjectKey(result.getProperty("project_key"));
-                issue.setSummary(result.getProperty("summary"));
-                issue.setDescription(result.getProperty("description"));
-                return Optional.of(issue);
+                return Optional.of(resultToIssue(result));
             }
         }
         return Optional.empty();
+    }
+
+    private Issue resultToIssue(Result result)
+    {
+        Issue issue =  new Issue();
+        issue.setKey(result.getProperty("key"));
+        issue.setProjectKey(result.getProperty("project_key"));
+        issue.setSummary(result.getProperty("summary"));
+        issue.setDescription(result.getProperty("description"));
+        issue.setStatus(result.getProperty("status"));
+        return issue;
     }
 }

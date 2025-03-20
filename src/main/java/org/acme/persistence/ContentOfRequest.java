@@ -17,10 +17,12 @@ public class ContentOfRequest
     @Inject
     IssueRepo issueRepo;
 
-    @Tool("When the user asks any for a problem or incident without providing a issue key or project key. Use this tool.")
-    public String content(@P("This parameter are the two top key words of the request. Pass each keyword twice, in german and in english.") List<String> keywords) throws JsonProcessingException
+    @Tool("When the user asks any for a problem or incident without providing a issue key or project key. Use this tool. Please filter out content that does not at all match the users needs.")
+    public String content(@P("This parameter are the seven top key words of the request. Please also pass synonyms for the keywords.") List<String> keywords) throws JsonProcessingException
     {
-        String where = keywords.stream().map(keyword -> "description.toLowerCase() LIKE '%" + keyword.toLowerCase() + "%'").collect(Collectors.joining(" OR "));
-        return new ObjectMapper().writeValueAsString(issueRepo.findByWhere(where));
+        String where = keywords.stream().map(keyword -> "description.toLowerCase() LIKE '%" + keyword.toLowerCase() + "%' OR summary.toLowerCase() LIKE '%" + keyword.toLowerCase() + "%'").collect(Collectors.joining(" OR "));
+        String result = new ObjectMapper().writeValueAsString(issueRepo.findByWhere(where));
+        System.out.println(result);
+        return result;
     }
 }

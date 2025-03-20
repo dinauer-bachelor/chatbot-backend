@@ -12,9 +12,12 @@ public class ClaraResource {
     ClaraBot claraBot;
 
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public String hello(String message) {
-        return claraBot.chat(message);
+    public String hello(Message message) {
+        if(message.context() != null && message.context().user() != null && !message.context().user().isBlank()) {
+            return claraBot.chat("You are talking to " + message.context().user() + ". The users message: " + message);
+        }
+        return claraBot.chat(message.text());
     }
 }

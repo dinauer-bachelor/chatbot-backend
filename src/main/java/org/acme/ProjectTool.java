@@ -26,12 +26,31 @@ public class ProjectTool
         Optional<Project> optionalProject = projectRepo.findById(key);
         if(optionalProject.isPresent())
         {
-            try {
+            try
+            {
                 return OBJECT_MAPPER.writeValueAsString(optionalProject.get());
-            } catch (JsonProcessingException e) {
+            } catch (JsonProcessingException e)
+            {
                 return "I encountered an error. Sorry.";
             }
         }
         return "There is no information about this project. Try another one.";
+    }
+
+    @Tool("""
+        Use this tool when a user wants to know about our projects in general.
+        Use this tool when you want to find a project if you have no key.
+        Inform the user by explicitly mentioning their keys in project name.
+        Count them like 1. 2. etc. but just with plain text. Add line breaks after each project.
+    """)
+    public String getProjects()
+    {
+        try
+        {
+            return OBJECT_MAPPER.writeValueAsString(projectRepo.findAll());
+        } catch (JsonProcessingException e)
+        {
+            return "I encountered an error. Sorry.";
+        }
     }
 }

@@ -10,9 +10,11 @@ import jakarta.inject.Inject;
 import org.acme.persistence.entity.Project;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.stylesheets.LinkStyle;
 
 import java.time.ZonedDateTime;
 import java.util.AbstractMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -45,11 +47,21 @@ public class ProjectRepo
             String sql = String.format("SELECT expand(@in) FROM %s WHERE @out = :out;", LATEST_STATE);
             try(RemoteDatabase remoteDB = database.get())
             {
-                ResultSet rs = remoteDB.command("sql", sql, Map.ofEntries(new AbstractMap.SimpleEntry<>("out", x.get().getIdentity())));
+                ResultSet rs = remoteDB.command(Database.SQL, sql, Map.ofEntries(new AbstractMap.SimpleEntry<>("out", x.get().getIdentity())));
                 return resultSetToOptionalProject(rs);
             }
         }
         return Optional.empty();
+    }
+
+    public List<Project> findAll()
+    {
+        String sql = String.format("SELECT FROM (TRAVERSE out('%s') FROM project_id)", LATEST_STATE);
+        try(RemoteDatabase remoteDB = database.get())
+        {
+            ResultSet rs = remoteDB.command(Database.SQL, sql);
+            return rs.stream().map(result -> new Project().setKey(result.getProperty("key")).setName(result.getProperty("name")).setDescription(result.getProperty("description"))).toList();
+        }
     }
 
     private Optional<Project> resultSetToOptionalProject(ResultSet resultSet)
