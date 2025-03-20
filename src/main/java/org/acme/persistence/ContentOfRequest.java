@@ -22,7 +22,11 @@ public class ContentOfRequest
     @Inject
     IssueRepo issueRepo;
 
-    @Tool("When a user asks about things that having nothing to do with automotive industry or manufacturing/production then use this tool. When the user asks any for a problem or incident without providing a issue key or project key. Use this tool.")
+    @Tool("""
+        When you have no context or a really short user message, use this tool.
+        When a user asks about things that having nothing to do with automotive industry or manufacturing/production then use this tool.
+        When the user asks any for a problem or incident without providing a issue key or project key. Use this tool.
+        """)
     public String content(@P("This parameter are the top key words of the request. Provide 5 keywords for short user inputs and up to 10 for longer inputs. No basic words like 'happened', 'faced', 'needed' etc. Please also pass synonyms for the keywords.") List<String> keywords) throws JsonProcessingException
     {
         LOG.info("Following keywords where identified: {}", keywords);
