@@ -6,6 +6,13 @@ pipeline {
     }
 
     stages {
+        stage('Build quarkus app') {
+            steps {
+                script {
+                    sh "./mvnw install"
+                }
+            }
+        }
         stage('Build image and run with docker compose') {
             steps {
                 script {
