@@ -1,6 +1,6 @@
 services:
   chatbot-backend:
-    build: ./chatbot-backend
+    build: .
     container_name: chatbot-backend
     ports:
       - "3002:8080"
