@@ -9,7 +9,7 @@ pipeline {
         stage('Build image and run with docker compose') {
             steps {
                 script {
-                    sh "docker compose up -d --build -e QUARKUS_LANGCHAIN4J_OPENAI_API_KEY=$OPEN_AI_KEY"
+                    sh "QUARKUS_LANGCHAIN4J_OPENAI_API_KEY=$OPEN_AI_KEY docker compose up -d --build"
                 }
             }
         }

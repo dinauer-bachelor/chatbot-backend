@@ -11,6 +11,7 @@ services:
       - ARCADEDB_USER=root
       - ARCADEDB_DATABASE=jira
       - DB_PASSWORD=quarkusIsLifeQuarkusIsLove
+      - QUARKUS_LANGCHAIN4J_OPENAI_API_KEY
     networks:
       - chatbot
 
