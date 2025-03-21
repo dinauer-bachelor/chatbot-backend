@@ -9,6 +9,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.acme.persistence.entity.Issue;
 import org.acme.persistence.repo.IssueRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.text.html.Option;
 import java.time.ZonedDateTime;
@@ -18,6 +20,8 @@ import java.util.Optional;
 @ApplicationScoped
 public class IssueTool
 {
+    private final Logger LOG = LoggerFactory.getLogger(IssueTool.class);
+
     @Inject
     IssueRepo issueRepo;
 
@@ -26,13 +30,20 @@ public class IssueTool
     @Tool("Use this tool when a user asks about a specific issue by id.")
     public String getIssue(@P("This is the issue key/id.") String issueId)
     {
+        LOG.info(String.format("Looking for issue %s.", issueId));
         Optional<Issue> optionalIssue = issueRepo.findById(issueId);
-        if(optionalIssue.isPresent()) {
-            try {
+        if(optionalIssue.isPresent())
+        {
+            LOG.info(String.format("Found one issue for key %s.", issueId));
+            try
+            {
                 return OBJECT_MAPPER.writeValueAsString(optionalIssue.get());
             } catch (JsonProcessingException e) {
                 return "I encountered an error. Sorry.";
             }
+        } else
+        {
+            LOG.info(String.format("Found no issue %s.", issueId));
         }
         return "There is no information about this issue. Try another one.";
     }
@@ -43,18 +54,21 @@ public class IssueTool
         """)
     public String getHistory(@P("This is the issue key/id.")  String issueKey)
     {
+        LOG.info(String.format("Looking for history of issue %s.", issueKey));
         Optional<Map<ZonedDateTime, Issue>> history = issueRepo.findHistoryById(issueKey);
         if(history.isPresent())
         {
+            LOG.info(String.format("Found history of one issue for key %s.", issueKey));
             try
             {
-                String result = OBJECT_MAPPER.writeValueAsString(history.get());
-                System.out.println(result);
-                return result;
+                return OBJECT_MAPPER.writeValueAsString(history.get());
             } catch (JsonProcessingException e)
             {
                 return "I encountered an error.";
             }
+        } else
+        {
+            LOG.info(String.format("No issue found for key %s.", issueKey));
         }
         return String.format("I cannot provide you with any information about issue %s", issueKey);
     }

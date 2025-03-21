@@ -16,8 +16,8 @@ public class ClaraResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String hello(Message message) {
         if(message.context() != null && message.context().user() != null && !message.context().user().isBlank()) {
-            return claraBot.chat("You are talking to " + message.context().user() + ". The users message: " + message);
+            return claraBot.chat("You are talking to " + message.context().user() + ". He asks or wants to know more about: " + message);
         }
-        return claraBot.chat(message.text());
+        return claraBot.chat("The user asks or wants to know more about: " + message.text());
     }
 }

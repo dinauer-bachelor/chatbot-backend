@@ -23,6 +23,7 @@ public class ContentOfRequest
     IssueRepo issueRepo;
 
     @Tool("""
+        When you have no idea what the user wants use this tool.
         When you have no context or a really short user message, use this tool.
         When a user asks about things that having nothing to do with automotive industry or manufacturing/production then use this tool.
         When the user asks any for a problem or incident without providing a issue key or project key. Use this tool.
