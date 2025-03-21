@@ -9,6 +9,7 @@ pipeline {
         stage('Build quarkus app') {
             steps {
                 script {
+                    sh "chmod +x ./mvnw"
                     sh "./mvnw install"
                 }
             }
