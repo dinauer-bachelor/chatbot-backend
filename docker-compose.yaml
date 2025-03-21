@@ -1,0 +1,21 @@
+services:
+  chatbot-backend:
+    build: ./chatbot-backend
+    container_name: chatbot-backend
+    ports:
+      - "3002:8080"
+    environment:
+      - QUARKUS_HTTP_CORS_ORIGINS=/.*/
+      - ARCADEDB_HOST=128.140.77.52
+      - ARCADEDB_PORT=2480
+      - ARCADEDB_USER=root
+      - ARCADEDB_DATABASE=jira
+      - DB_PASSWORD=quarkusIsLifeQuarkusIsLove
+    networks:
+      - chatbot
+
+networks:
+  chatbot:
+    name: chatbot
+    driver: bridge
+    external: true

@@ -28,6 +28,7 @@ public class ContentOfRequest
         When a user asks about things that having nothing to do with automotive industry or manufacturing/production then use this tool.
         When the user asks any for a problem or incident without providing a issue key or project key. Use this tool.
         Filter the response and only provide content in the response that is relevant to what the user wants.
+        You should generally sum up and tell the user how many issues you found are relevant to him. If there are too much issues tell the user that you only provide some of them.
         """)
     public String content(@P("This parameter are the top key words of the request. Provide 5 keywords for short user inputs and up to 10 for longer inputs. No basic words like 'happened', 'faced', 'needed' etc. Please also pass synonyms for the keywords.") List<String> keywords) throws JsonProcessingException
     {

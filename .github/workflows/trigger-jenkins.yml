@@ -1,0 +1,15 @@
+name: Trigger Jenkins Pipeline
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+jobs:
+  trigger-jenkins:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Jenkins Job
+        env:
+          JENKINS_BUILD_TOKEN: ${{ secrets.JENKINS_BUILD_TOKEN }}
+          JENKINS_TOKEN: ${{ secrets.JENKINS_TOKEN }}
+        run: curl -X POST https://jenkins.dinauer-paf.de/job/chatbot-backend/build --user "Admin:${JENKINS_TOKEN}" --data-urlencode "token=${JENKINS_BUILD_TOKEN}" --insecure
