@@ -72,4 +72,16 @@ public class IssueTool
         }
         return String.format("I cannot provide you with any information about issue %s", issueKey);
     }
+
+    @Tool("Use this tool if the user asks for issue and mentions a reporter or/and assignee or/and project key and/or status. Pass a SQL Where clause without the where in front. Do not search by equals but by contains like this: '%input%'. If the user does not mention an attribute leave it out completely.")
+    public String String(@P("This is the SQL where clause you identify from the users prompt. Attributes you can use are 'reporter.toLowerCase()', 'status.toLowerCase()', 'assignee.toLowerCase()' or 'project_key.toLowerCase()' use 'AND' or 'OR' to connect them") String where)
+    {
+        try
+        {
+            return OBJECT_MAPPER.writeValueAsString(issueRepo.findByWhere(where));
+        } catch (JsonProcessingException e)
+        {
+            return "Sorry. I made a mistake when looking for issues. Please try again";
+        }
+    }
 }

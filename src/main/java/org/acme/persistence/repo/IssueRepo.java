@@ -66,13 +66,7 @@ public class IssueRepo
                 while(rs.hasNext())
                 {
                     Result result = rs.next();
-                    Issue issue =  new Issue();
-                    issue.setKey(result.getProperty("key"));
-                    issue.setProjectKey(result.getProperty("project_key"));
-                    issue.setSummary(result.getProperty("summary"));
-                    issue.setStatus(result.getProperty("status"));
-                    issue.setDescription(result.getProperty("description"));
-                    history.put(ZonedDateTime.parse(result.getProperty("inserted_at"), DateTimeFormatter.ISO_DATE_TIME), issue);
+                    history.put(ZonedDateTime.parse(result.getProperty("inserted_at"), DateTimeFormatter.ISO_DATE_TIME), resultToIssue(result));
                 }
                 return Optional.of(history);
             }
@@ -114,6 +108,9 @@ public class IssueRepo
         issue.setSummary(result.getProperty("summary"));
         issue.setDescription(result.getProperty("description"));
         issue.setStatus(result.getProperty("status"));
+        issue.setIssuetype(result.getProperty("issuetype"));
+        issue.setAssignee(result.getProperty("assignee"));
+        issue.setReporter(result.getProperty("reporter"));
         return issue;
     }
 }
