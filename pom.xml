@@ -69,6 +69,13 @@
             <artifactId>arcadedb-network</artifactId>
             <version>24.11.2</version>
         </dependency>
+
+        <!-- Guava for N-Gram splitting -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>33.4.6-jre</version>
+        </dependency>
     </dependencies>
 
     <build>

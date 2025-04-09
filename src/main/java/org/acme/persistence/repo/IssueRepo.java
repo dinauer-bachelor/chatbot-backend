@@ -1,5 +1,6 @@
 package org.acme.persistence.repo;
 
+import com.arcadedb.graph.Edge;
 import com.arcadedb.graph.Vertex;
 import com.arcadedb.query.sql.executor.Result;
 import com.arcadedb.query.sql.executor.ResultSet;
@@ -7,6 +8,7 @@ import com.arcadedb.remote.RemoteDatabase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.acme.persistence.entity.Issue;
+import org.acme.persistence.entity.SimilarIssue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +20,8 @@ import java.util.*;
 public class IssueRepo
 {
     private static final Logger LOG = LoggerFactory.getLogger(IssueRepo.class);
+
+    private final static String VERTEX_TYPE = "issue";
 
     private final static String LATEST_STATE = "latest_issue_state";
 
@@ -74,17 +78,51 @@ public class IssueRepo
         return Optional.empty();
     }
 
-    public List<Issue> findByWhere(String where)
+    public List<Issue> findByWhere(String where, Integer limit)
     {
         String sql = String.format("SELECT FROM (TRAVERSE out() FROM (TRAVERSE out() FROM project_id) MAXDEPTH 5) WHERE @type = 'issue' AND (%s)", where);
         try(RemoteDatabase remoteDB = database.get())
         {
             LOG.info("Executing SQL {}", sql);
-            ResultSet rs = remoteDB.command("sql", sql);
+            ResultSet rs = remoteDB.command(Database.SQL, sql);
             List<Issue> issues = rs.stream().map(this::resultToIssue).toList();
-            LOG.info("Found {} result(s).", issues.size());
+            if(limit != null)
+            {
+                return issues.stream().limit(limit).toList();
+            }
             return issues;
         }
+    }
+
+    public List<SimilarIssue> findSimilarByKey(String key)
+    {
+        Optional<Vertex> optionalSimilarId = exists(key);
+        if(optionalSimilarId.isPresent())
+        {
+            Vertex similarId = optionalSimilarId.get();
+            try(RemoteDatabase remoteDB = database.get())
+            {
+                List<SimilarIssue> similarities = new ArrayList<>();
+                Vertex similarIdActive = remoteDB.lookupByRID(similarId.getIdentity()).asVertex();
+                Iterator<Edge> similarityEdges = similarIdActive.getEdges(Vertex.DIRECTION.OUT, "is_similar_to").iterator();
+                while(similarityEdges.hasNext())
+                {
+                    Edge edge = similarityEdges.next();
+                    Iterator<Edge> edgesToLatestOther = edge.getInVertex().getEdges(Vertex.DIRECTION.OUT, LATEST_STATE).iterator();
+                    if(edgesToLatestOther.hasNext())
+                    {
+                        Edge edge1 = edgesToLatestOther.next();
+                        Vertex otherIssue = edge1.getInVertex();
+                        SimilarIssue similarIssue = new SimilarIssue();
+                        similarIssue.setSimilarity(edge.getDouble("similarity"));
+                        similarIssue.setIssue(vertexToIssue(otherIssue).orElse(null));
+                        similarities.add(similarIssue);
+                    }
+                }
+                return similarities;
+            }
+        }
+       throw new NoSuchElementException();
     }
 
     private Optional<Issue> resultSetToOptionalIssue(ResultSet resultSet)
@@ -96,6 +134,24 @@ public class IssueRepo
             {
                 return Optional.of(resultToIssue(result));
             }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Issue> vertexToIssue(Vertex vertex)
+    {
+        if(VERTEX_TYPE.equals(vertex.getTypeName()))
+        {
+            Issue issue =  new Issue();
+            issue.setKey(vertex.getString("key"));
+            issue.setProjectKey(vertex.getString("project_key"));
+            issue.setSummary(vertex.getString("summary"));
+            issue.setDescription(vertex.getString("description"));
+            issue.setStatus(vertex.getString("status"));
+            issue.setIssuetype(vertex.getString("issuetype"));
+            issue.setAssignee(vertex.getString("assignee"));
+            issue.setReporter(vertex.getString("reporter"));
+            return Optional.of(issue);
         }
         return Optional.empty();
     }

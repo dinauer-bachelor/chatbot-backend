@@ -1,4 +1,4 @@
-package org.acme;
+package org.acme.tools;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,7 +6,6 @@ import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.PathParam;
 import org.acme.persistence.entity.Comment;
 import org.acme.persistence.repo.CommentRepo;
 import org.slf4j.Logger;

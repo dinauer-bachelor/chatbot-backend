@@ -1,4 +1,4 @@
-package org.acme;
+package org.acme.tools;
 
 import dev.langchain4j.agent.tool.Tool;
 import jakarta.enterprise.context.ApplicationScoped;
